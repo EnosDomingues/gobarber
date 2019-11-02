@@ -1,5 +1,6 @@
 /* eslint-disable camelcase */
 import * as Yup from 'yup';
+import { startOfHour, parseISO, isBefore } from 'date-fns';
 import User from '../models/User';
 import Appointment from '../models/Appointment';
 
@@ -22,6 +23,8 @@ class AppointmentController {
     const checkIsProvider = await User.findOne({
       where: { id: provider_id, provider: true },
     });
+
+    const hourStart = startOfHour(parseISO(date));
 
     if (!checkIsProvider) {
       res
