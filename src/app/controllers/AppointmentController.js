@@ -24,7 +24,32 @@ class AppointmentController {
       where: { id: provider_id, provider: true },
     });
 
+    /**
+     * check for past dates
+     */
     const hourStart = startOfHour(parseISO(date));
+
+    if (isBefore(hourStart, new Date())) {
+      return res.status(400).json({ error: 'Past dates are not allowed.' });
+    }
+
+    /**
+     * check date availability
+     */
+
+    const checkAvailability = await Appointment.findOne({
+      where: {
+        provider_id,
+        canceled_at: null,
+        date: hourStart,
+      },
+    });
+
+    if (checkAvailability) {
+      return res
+        .status(400)
+        .json({ error: 'Appointment date is not available' });
+    }
 
     if (!checkIsProvider) {
       res
