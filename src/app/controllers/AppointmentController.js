@@ -36,6 +36,7 @@ class AppointmentController {
     return res.json(appointments);
   }
 
+  // Criar validação para que provider não possa criar agendamentos para ele mesmo.
   async store(req, res) {
     const schema = Yup.object().shape({
       provider_id: Yup.number().required(),
@@ -54,6 +55,12 @@ class AppointmentController {
     const checkIsProvider = await User.findOne({
       where: { id: provider_id, provider: true },
     });
+
+    if (!checkIsProvider) {
+      res
+        .status(401)
+        .json({ error: 'You can only create appointments with providers' });
+    }
 
     /**
      * check for past dates
@@ -80,12 +87,6 @@ class AppointmentController {
       return res
         .status(400)
         .json({ error: 'Appointment date is not available' });
-    }
-
-    if (!checkIsProvider) {
-      res
-        .status(401)
-        .json({ error: 'You can only create appointments with providers' });
     }
 
     const appointment = await Appointment.create({
